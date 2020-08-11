@@ -5,9 +5,6 @@ import store from "./store";
 
 require("./assets/css/main.scss");
 
-import { db } from "./firebase";
-console.log(db);
-
 Vue.config.productionTip = false;
 
 new Vue({
