@@ -139,10 +139,11 @@ export default {
           email: this.userData.email,
           password: this.userData.password
         });
-        console.log("Logged in");
+        this.$toast.success("Logged in");
         this.resetData();
         this.redirect();
       } catch (error) {
+        this.$toast.error(error.message);
         console.error(error.message);
       } finally {
         this.isLoading = false;
@@ -156,10 +157,11 @@ export default {
           email: this.userData.email,
           password: this.userData.password
         });
-        console.log("Account created");
+        this.$toast.success("Account created");
         this.resetData();
         this.redirect();
       } catch (error) {
+        this.$toast.error(error.message);
         console.error(error.message);
       } finally {
         this.isLoading = false;

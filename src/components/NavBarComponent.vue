@@ -73,8 +73,9 @@ export default {
       try {
         await this.$store.dispatch("user/doLogout");
         this.$router.push({ name: "auth" });
-        console.log("Logged out");
+        this.$toast.success("Logged out");
       } catch (error) {
+        this.$toast.error(error.message);
         console.error(error.message);
       }
     }
