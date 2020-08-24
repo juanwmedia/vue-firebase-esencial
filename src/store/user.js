@@ -12,6 +12,19 @@ const mutations = {
 };
 
 const actions = {
+  getCurrentUser() {
+    return new Promise((resolve, reject) => {
+      const unsubscribe = auth.onAuthStateChanged(
+        user => {
+          unsubscribe();
+          resolve(user);
+        },
+        () => {
+          reject();
+        }
+      );
+    });
+  },
   async doLogin({ commit }, { email, password }) {
     await auth.signInWithEmailAndPassword(email, password);
     commit("setUser", auth.currentUser);
