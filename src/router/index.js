@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import RoomsView from "../views/RoomsView.vue";
 import AuthView from "../views/AuthView.vue";
+import UserProfileView from "../views/UserProfileView.vue";
 import store from "../store";
 
 Vue.use(VueRouter);
@@ -19,6 +20,14 @@ const routes = [
     path: "/auth",
     name: "auth",
     component: AuthView
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    component: UserProfileView,
+    meta: {
+      requiresAuth: true
+    }
   }
 ];
 
