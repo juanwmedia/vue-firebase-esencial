@@ -30,21 +30,17 @@ export default {
     //   .collection("users")
     //   .doc(uniqueId)
     //   .delete();
-
     // Read a document
-    const document = await db
-      .collection("users")
-      .doc("juanwmedia")
-      .get();
-
-    console.log(document.data());
-    console.log(document.id); // Document ID
-    console.log(document.exists); // Document exists (or not)
-
+    // const document = await db
+    //   .collection("users")
+    //   .doc("juanwmedia")
+    //   .get();
+    // console.log(document.data());
+    // console.log(document.id); // Document ID
+    // console.log(document.exists); // Document exists (or not)
     // Read all documents from a collection
-    const collection = await db.collection("users").get();
-    collection.forEach(doc => console.log(doc.id, doc.data()));
-
+    // const collection = await db.collection("users").get();
+    // collection.forEach(doc => console.log(doc.id, doc.data()));
     // Read a document from a subcollection
     // const subDocument = await db
     //   .collection("users")
@@ -52,10 +48,42 @@ export default {
     //   .collection("meta")
     //   .doc("books")
     //   .get();
+    // const subDocument = await db.doc("users/juanwmedia/meta/books").get();
+    // console.log(subDocument.data());
 
-    const subDocument = await db.doc("users/juanwmedia/meta/books").get();
+    // Listen for changes
+    // db.collection("users")
+    //   .doc("juanwmedia")
+    //   .onSnapshot(docSnapshot => console.log(docSnapshot.data()));
 
-    console.log(subDocument.data());
+    // Listen for query changes
+    // db.collection("users")
+    //   .where("name", "==", "Guizmo")
+    //   .onSnapshot(querySnapshot =>
+    //     querySnapshot.forEach(docSnapshot => console.log(docSnapshot.id))
+    //   );
+
+    // Listen for query type changes
+    const unsub = db
+      .collection("users")
+      .where("name", "==", "Guizmo")
+      .onSnapshot(querySnapshot =>
+        querySnapshot.docChanges().forEach(change => {
+          if (change.type === "added") {
+            console.log("Added : ", change.doc.data());
+          }
+
+          if (change.type === "modified") {
+            console.log("Modified : ", change.doc.data());
+          }
+
+          if (change.type === "removed") {
+            console.log("Removed : ", change.doc.data());
+          }
+        })
+      );
+
+    unsub();
   }
 };
 </script>
