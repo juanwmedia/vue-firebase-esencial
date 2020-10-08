@@ -64,26 +64,44 @@ export default {
     //   );
 
     // Listen for query type changes
-    const unsub = db
-      .collection("users")
-      .where("name", "==", "Guizmo")
-      .onSnapshot(querySnapshot =>
-        querySnapshot.docChanges().forEach(change => {
-          if (change.type === "added") {
-            console.log("Added : ", change.doc.data());
-          }
+    // const unsub = db
+    //   .collection("users")
+    //   .where("name", "==", "Guizmo")
+    //   .onSnapshot(querySnapshot =>
+    //     querySnapshot.docChanges().forEach(change => {
+    //       if (change.type === "added") {
+    //         console.log("Added : ", change.doc.data());
+    //       }
 
-          if (change.type === "modified") {
-            console.log("Modified : ", change.doc.data());
-          }
+    //       if (change.type === "modified") {
+    //         console.log("Modified : ", change.doc.data());
+    //       }
 
-          if (change.type === "removed") {
-            console.log("Removed : ", change.doc.data());
-          }
-        })
-      );
+    //       if (change.type === "removed") {
+    //         console.log("Removed : ", change.doc.data());
+    //       }
+    //     })
+    //   );
 
-    unsub();
+    // unsub();
+
+    // Query documents and collections
+    const collectionRef = db.collection("users");
+    // const query = await collectionRef.where("name", "==", "Guizmo").get();
+    // query.forEach(querySnapshot => console.log(querySnapshot.data().id));
+
+    // const query = await collectionRef.where("created", "!=", false).get();
+    // query.forEach(querySnapshot => console.log(querySnapshot.data()));
+
+    // const query = await collectionRef
+    //   .where("name", "in", ["Guizmo", "Juan Andrés"])
+    //   .get();
+    // query.forEach(querySnapshot => console.log(querySnapshot.data()));
+
+    const query = await collectionRef
+      .where("favs", "array-contains-any", ["dusk", "rain"])
+      .get();
+    query.forEach(querySnapshot => console.log(querySnapshot.id));
   }
 };
 </script>
