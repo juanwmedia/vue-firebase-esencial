@@ -98,10 +98,28 @@ export default {
     //   .get();
     // query.forEach(querySnapshot => console.log(querySnapshot.data()));
 
+    // const query = await collectionRef
+    //   .where("favs", "array-contains-any", ["dusk", "rain"])
+    //   .get();
+    // query.forEach(querySnapshot => console.log(querySnapshot.id));
+
+    // const query = await collectionRef
+    //   .where("name", "==", "Guizmo")
+    //   .limit(3)
+    //   .get();
+    // query.forEach(querySnapshot => console.log(querySnapshot.data()));
+
+    // const query = await collectionRef.orderBy("name", "desc").get();
+    // query.forEach(querySnapshot => console.log(querySnapshot.data().name));
+
     const query = await collectionRef
-      .where("favs", "array-contains-any", ["dusk", "rain"])
+      .where("created", "<", Date.now())
+      .orderBy("created", "desc")
+      .limit(1)
       .get();
-    query.forEach(querySnapshot => console.log(querySnapshot.id));
+
+    //console.log(query);
+    query.forEach(querySnapshot => console.log(querySnapshot.data()));
   }
 };
 </script>
