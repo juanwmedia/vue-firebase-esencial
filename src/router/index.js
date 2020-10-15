@@ -1,8 +1,9 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import RoomsView from "../views/RoomsView.vue";
-import AuthView from "../views/AuthView.vue";
-import UserProfileView from "../views/UserProfileView.vue";
+const RoomsView = () => import("../views/RoomsView.vue");
+const AuthView = () => import("../views/AuthView.vue");
+const UserProfileView = () => import("../views/UserProfileView.vue");
+const CreateRoom = () => import("../views/CreateRoom.vue");
 import store from "../store";
 
 Vue.use(VueRouter);
@@ -10,7 +11,7 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: "/",
-    name: "Home",
+    name: "home",
     component: RoomsView,
     meta: {
       requiresAuth: true
@@ -25,6 +26,14 @@ const routes = [
     path: "/profile",
     name: "profile",
     component: UserProfileView,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/create",
+    name: "create",
+    component: CreateRoom,
     meta: {
       requiresAuth: true
     }

@@ -165,7 +165,7 @@ export default {
   },
   methods: {
     redirect() {
-      this.$router.push({ name: "Home" });
+      this.$router.push({ name: "home" });
     },
     resetData() {
       this.userData.name = this.userData.email = this.userData.password = "";
