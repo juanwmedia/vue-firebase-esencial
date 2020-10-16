@@ -4,7 +4,11 @@ const state = {
   rooms: []
 };
 
-const mutations = {};
+const mutations = {
+  setRooms(state, rooms) {
+    state.rooms = rooms;
+  }
+};
 
 const actions = {
   async createRoom({ rootState }, { name, description }) {
@@ -12,7 +16,23 @@ const actions = {
       name,
       description,
       createdAt: Date.now(),
-      admin: rootState.user.user.uid
+      adminUid: rootState.user.user.uid,
+      adminName: rootState.user.user.displayName
+    });
+  },
+
+  async getRooms({ commit }) {
+    const query = db.collection("rooms").orderBy("createdAt", "desc");
+    query.onSnapshot(querySnapshot => {
+      const rooms = [];
+      commit("setLoading", true, { root: true });
+      querySnapshot.forEach(doc => {
+        let room = doc.data();
+        room.id = doc.id;
+        rooms.push(room);
+      });
+      commit("setLoading", false, { root: true });
+      commit("setRooms", rooms);
     });
   }
 };

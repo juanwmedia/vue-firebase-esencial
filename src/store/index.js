@@ -11,15 +11,23 @@ import { auth } from "../firebase.js";
 Vue.use(Vuex);
 
 const store = new Vuex.Store({
-  state: {},
-  mutations: {},
+  state: {
+    isLoading: true
+  },
+  mutations: {
+    setLoading(state, loading) {
+      state.isLoading = loading;
+    }
+  },
   actions: {
-    checkAuth({ commit }) {
+    checkAuth({ dispatch, commit }) {
       auth.onAuthStateChanged(function(user) {
         if (user) {
           commit("user/setUser", user);
+          dispatch("rooms/getRooms");
         } else {
           commit("user/setUser", null);
+          commit("rooms/setRooms", []);
         }
       });
     }
