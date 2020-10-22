@@ -1,7 +1,8 @@
 import { db } from "../firebase";
 
 const state = {
-  rooms: []
+  rooms: [],
+  roomsListener: () => {}
 };
 
 const getters = {
@@ -11,8 +12,26 @@ const getters = {
 };
 
 const mutations = {
+  setRoomsListener(state, listener) {
+    if (listener) {
+      state.roomsListener = listener;
+    } else {
+      state.roomsListener();
+    }
+  },
   setRooms(state, rooms) {
     state.rooms = rooms;
+  },
+  createRoom(state, { roomData, id }) {
+    roomData.id = id;
+    state.rooms.unshift(roomData);
+  },
+  updateRoom(state, { index, roomData, id }) {
+    roomData.id = id;
+    state.rooms[index] = roomData;
+  },
+  removeRoom(state, index) {
+    state.rooms.splice(index, 1);
   }
 };
 
@@ -28,18 +47,39 @@ const actions = {
   },
 
   async getRooms({ commit }) {
-    const query = db.collection("rooms").orderBy("createdAt", "desc");
-    query.onSnapshot(querySnapshot => {
-      const rooms = [];
+    const query = db
+      .collection("rooms")
+      .orderBy("createdAt", "desc")
+      .onSnapshot(doSnapshot);
+
+    commit("setRoomsListener", query);
+
+    function doSnapshot(querySnapshot) {
       commit("setLoading", true, { root: true });
-      querySnapshot.forEach(doc => {
-        let room = doc.data();
-        room.id = doc.id;
-        rooms.push(room);
+
+      querySnapshot.docChanges().forEach(change => {
+        if (change.type === "added") {
+          commit("createRoom", {
+            roomData: change.doc.data(),
+            id: change.doc.id
+          });
+        }
+
+        if (change.type === "modified") {
+          commit("updateRoom", {
+            index: change.newIndex,
+            roomData: change.doc.data(),
+            id: change.doc.id
+          });
+        }
+
+        if (change.type === "removed") {
+          commit("removeRoom", change.oldIndex);
+        }
       });
+
       commit("setLoading", false, { root: true });
-      commit("setRooms", rooms);
-    });
+    }
   },
 
   async getRoom(context, roomID) {
