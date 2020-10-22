@@ -26,6 +26,14 @@
             <div class="content">
               {{ room.description }}
             </div>
+            <nav class="buttons is-right">
+              <router-link
+                :to="{ name: 'update', params: { id: room.id } }"
+                class="button is-small"
+                v-if="room.adminUid === $store.getters['user/getUserUid']"
+                >Edit</router-link
+              >
+            </nav>
           </div>
         </div>
       </div>

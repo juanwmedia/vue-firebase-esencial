@@ -4,6 +4,7 @@ const RoomsView = () => import("../views/RoomsView.vue");
 const AuthView = () => import("../views/AuthView.vue");
 const UserProfileView = () => import("../views/UserProfileView.vue");
 const CreateRoom = () => import("../views/CreateRoom.vue");
+const UpdateRoom = () => import("../views/UpdateRoom.vue");
 import store from "../store";
 
 Vue.use(VueRouter);
@@ -34,6 +35,15 @@ const routes = [
     path: "/create",
     name: "create",
     component: CreateRoom,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: "/update/:id",
+    name: "update",
+    props: true,
+    component: UpdateRoom,
     meta: {
       requiresAuth: true
     }

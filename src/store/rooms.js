@@ -4,6 +4,12 @@ const state = {
   rooms: []
 };
 
+const getters = {
+  getRoom: state => id => {
+    return state.rooms.find(room => room.id === id);
+  }
+};
+
 const mutations = {
   setRooms(state, rooms) {
     state.rooms = rooms;
@@ -34,12 +40,33 @@ const actions = {
       commit("setLoading", false, { root: true });
       commit("setRooms", rooms);
     });
+  },
+
+  async getRoom(context, roomID) {
+    return await db
+      .collection("rooms")
+      .doc(roomID)
+      .get();
+  },
+
+  async updateRoom(context, { roomID, name, description }) {
+    const roomData = {};
+
+    if (name) roomData.name = name;
+
+    if (description) roomData.description = description;
+
+    await db
+      .collection("rooms")
+      .doc(roomID)
+      .update(roomData);
   }
 };
 
 export default {
   namespaced: true,
   state,
+  getters,
   actions,
   mutations
 };
