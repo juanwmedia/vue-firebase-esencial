@@ -1,4 +1,4 @@
-import { auth } from "../firebase.js";
+import { auth, db } from "../firebase.js";
 const state = {
   user: null
 };
@@ -29,12 +29,23 @@ const actions = {
       );
     });
   },
-  async updateProfile({ commit }, { name, email, password }) {
+  async updateProfile({ commit, state }, { name, email, password }) {
     const user = auth.currentUser;
 
     if (name) {
       await user.updateProfile({
         displayName: name
+      });
+
+      db.runTransaction(async transaction => {
+        const query = await db
+          .collectionGroup("messages")
+          .where("userId", "==", state.user.uid)
+          .get();
+
+        query.forEach(doc => {
+          transaction.update(doc.ref, { userName: name });
+        });
       });
     }
 
