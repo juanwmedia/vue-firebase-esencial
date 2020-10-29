@@ -82,11 +82,21 @@ const actions = {
     }
   },
 
-  async getRoom(context, roomID) {
-    return await db
-      .collection("rooms")
-      .doc(roomID)
-      .get();
+  async getRoom({ getters }, roomID) {
+    // Grab from local state
+    let room = getters["getRoom"](roomID);
+    if (!room) {
+      // Grab from Cloud Firestore 🔥
+      room = await db
+        .collection("rooms")
+        .doc(roomID)
+        .get();
+
+      if (!room.exists) throw new Error("Could not find room");
+      room = room.data();
+    }
+
+    return room;
   },
 
   async updateRoom(context, { roomID, name, description }) {

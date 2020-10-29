@@ -57,15 +57,7 @@ export default {
   name: "UpdateRoom",
   async created() {
     try {
-      // Grab from local state
-      let room = this.$store.getters["rooms/getRoom"](this.id);
-      if (!room) {
-        // Grab from Cloud Firestore 🔥
-        room = await this.$store.dispatch("rooms/getRoom", this.id);
-        if (!room.exists) throw new Error("Could not find room");
-        room = room.data();
-      }
-      this.room = room;
+      this.room = await this.$store.dispatch("rooms/getRoom", this.id);
     } catch (error) {
       console.error(error.message);
       this.$toast.error(error.message);
