@@ -2,9 +2,9 @@
   <div class="container">
     <nav class="navbar" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
-        <a class="navbar-item">
+        <router-link :to="{ name: 'home' }" class="navbar-item">
           <img class="navbar__logo" src="../assets/img/VueTalk-logo.png" />
-        </a>
+        </router-link>
         <a
           @click.prevent="toggleNavBar"
           role="button"

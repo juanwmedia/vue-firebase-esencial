@@ -110,6 +110,24 @@ const actions = {
       .collection("rooms")
       .doc(roomID)
       .update(roomData);
+  },
+
+  async removeRoom(context, roomID) {
+    const room = db.collection("rooms").doc(roomID);
+    const messages = room.collection("messages").onSnapshot(doSnapshot);
+
+    await room.delete();
+
+    function doSnapshot(snapshot) {
+      snapshot.docs.forEach(async doc => {
+        await room
+          .collection("messages")
+          .doc(doc.id)
+          .delete();
+      });
+
+      messages(); // Unsub
+    }
   }
 };
 

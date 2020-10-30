@@ -41,7 +41,13 @@
                 </button>
               </div>
               <div class="control">
-                <button class="button is-danger">Delete</button>
+                <button
+                  @click="removeRoom"
+                  type="button"
+                  class="button is-danger"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </form>
@@ -91,6 +97,22 @@ export default {
         this.$toast.error(error.message);
       } finally {
         this.isLoading = false;
+      }
+    },
+
+    async removeRoom() {
+      try {
+        await this.$store.dispatch("utils/requestConfirmation", {
+          props: { message: "¿Remove room?" },
+          component: "ConfirmationModal"
+        });
+
+        await this.$store.dispatch("rooms/removeRoom", this.id);
+        this.$toast.success("Room removed");
+        this.$router.push({ name: "home" });
+      } catch (error) {
+        console.error(error.message);
+        this.$toast.error(error.message);
       }
     }
   },
