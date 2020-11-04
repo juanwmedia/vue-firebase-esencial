@@ -7,7 +7,7 @@
             <h1 class="title has-text-centered">{{ room.name }}</h1>
             <div class="messages content" ref="messages">
               <div
-                v-for="message in messages"
+                v-for="message in roomMessages"
                 :key="message.id"
                 class="message"
                 :class="{
@@ -68,9 +68,14 @@ dayjs.extend(relativeTime);
 export default {
   name: "ViewRoom",
   async created() {
+    this.userUid = this.$store.state.user.user.uid;
     try {
       this.room = await this.$store.dispatch("rooms/getRoom", this.id);
-      this.$store.dispatch("messages/getMessages", this.id);
+      this.$store.dispatch("user/updateMeta", {
+        roomID: this.id,
+        exit: false,
+        uid: this.userUid
+      });
     } catch (error) {
       console.error(error.message);
       this.$toast.error(error.message);
@@ -78,7 +83,11 @@ export default {
     }
   },
   destroyed() {
-    this.$store.commit("messages/setMessagesListener", null);
+    this.$store.dispatch("user/updateMeta", {
+      roomID: this.id,
+      exit: true,
+      uid: this.userUid
+    });
   },
   props: {
     id: {
@@ -88,6 +97,7 @@ export default {
   },
   data() {
     return {
+      userUid: null,
       isLoading: false,
       message: "",
       room: null
@@ -128,7 +138,10 @@ export default {
     }
   },
   computed: {
-    ...mapState("messages", ["messages"])
+    ...mapState("messages", ["messages"]),
+    roomMessages() {
+      return this.messages.filter(message => message.roomId === this.id);
+    }
   }
 };
 </script>

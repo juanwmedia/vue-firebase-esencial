@@ -21,11 +21,9 @@ const mutations = {
 };
 
 const actions = {
-  async getMessages({ commit }, roomID) {
+  async getMessages({ commit }) {
     const query = db
-      .collection("rooms")
-      .doc(roomID)
-      .collection("messages")
+      .collectionGroup("messages")
       .orderBy("createdAt", "desc")
       .onSnapshot(doSnapShot);
 
@@ -51,6 +49,7 @@ const actions = {
       .add({
         userId: rootState.user.user.uid,
         userName: rootState.user.user.displayName,
+        roomId: roomID,
         message,
         createdAt: Date.now()
       });

@@ -1,6 +1,8 @@
-import { auth, db } from "../firebase.js";
+import { auth, db, firebase } from "../firebase.js";
 const state = {
-  user: null
+  user: null,
+  meta: {},
+  userListener: () => {}
 };
 
 const getters = {
@@ -12,6 +14,16 @@ const getters = {
 const mutations = {
   setUser(state, user) {
     state.user = user;
+  },
+  setMeta(state, meta) {
+    state.meta = meta;
+  },
+  setUserListener(state, listener) {
+    if (listener) {
+      state.userListener = listener;
+    } else {
+      state.userListener();
+    }
   }
 };
 
@@ -29,6 +41,34 @@ const actions = {
       );
     });
   },
+
+  async updateMeta(context, { roomID, exit, uid }) {
+    const ref = db.collection("users").doc(uid);
+    const userDoc = await ref.get();
+
+    if (!userDoc.exists) await ref.set({});
+
+    const method = exit ? "arrayRemove" : "arrayUnion";
+    await ref.update({
+      connected: firebase.firestore.FieldValue[method](roomID),
+      [`joined.${roomID}`]: Date.now()
+    });
+  },
+
+  async getMeta({ state, commit }) {
+    const ref = db.collection("users").doc(state.user.uid);
+
+    await ref.update({ connected: [] });
+
+    const query = ref.onSnapshot(doSnapshot);
+
+    commit("setUserListener", query);
+
+    function doSnapshot(doc) {
+      commit("setMeta", doc.data());
+    }
+  },
+
   async updateProfile({ commit, state }, { name, email, password }) {
     const user = auth.currentUser;
 
@@ -71,9 +111,8 @@ const actions = {
     });
     commit("setUser", user);
   },
-  async doLogout({ commit }) {
+  async doLogout() {
     await auth.signOut();
-    commit("setUser", null);
   },
   async doReset(context, email) {
     await auth.sendPasswordResetEmail(email);
