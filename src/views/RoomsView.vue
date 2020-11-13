@@ -5,7 +5,10 @@
         Rooms
       </h1>
 
-      <RoomsComponent :unread-messages="unreadMessages" :rooms="rooms" />
+      <RoomsComponent
+        :unread-messages="unreadMessages"
+        :rooms="$store.getters['rooms/roomsByDate']"
+      />
     </div>
   </section>
 </template>

@@ -93,7 +93,7 @@ export default {
         });
         this.$toast.success("Room data updated");
       } catch (error) {
-        console.erro(error.message);
+        console.error(error.message);
         this.$toast.error(error.message);
       } finally {
         this.isLoading = false;

@@ -8,6 +8,11 @@ const state = {
 const getters = {
   getRoom: state => id => {
     return state.rooms.find(room => room.id === id);
+  },
+  roomsByDate: state => {
+    return state.rooms.sort(function(a, b) {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
   }
 };
 
@@ -24,7 +29,7 @@ const mutations = {
   },
   createRoom(state, { roomData, id }) {
     roomData.id = id;
-    state.rooms.unshift(roomData);
+    state.rooms.push(roomData);
   },
   updateRoom(state, { index, roomData, id }) {
     roomData.id = id;
@@ -116,9 +121,7 @@ const actions = {
     const room = db.collection("rooms").doc(roomID);
     const messages = room.collection("messages").onSnapshot(doSnapshot);
 
-    await room.delete();
-
-    function doSnapshot(snapshot) {
+    async function doSnapshot(snapshot) {
       snapshot.docs.forEach(async doc => {
         await room
           .collection("messages")
@@ -127,6 +130,8 @@ const actions = {
       });
 
       messages(); // Unsub
+
+      await room.delete();
     }
   }
 };
