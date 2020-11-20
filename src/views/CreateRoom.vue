@@ -31,6 +31,41 @@
               </div>
             </div>
 
+            <div class="field">
+              <label class="label">Image</label>
+              <div class="control">
+                <div
+                  class="room__image"
+                  :style="{
+                    'background-image': `url(${roomImage})`
+                  }"
+                >
+                  <a
+                    href="#"
+                    v-if="image"
+                    @click.prevent="image = roomData.imageURL = null"
+                    class="is-pulled-right button is-small is-danger is-outlined"
+                    >X</a
+                  >
+                </div>
+                <div class="file">
+                  <label class="file-label">
+                    <input
+                      class="file-input"
+                      type="file"
+                      @change="onFileChange"
+                      ref="file"
+                    />
+                    <span class="file-cta">
+                      <span class="file-label">
+                        Choose a image
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <div class="field has-text-right">
               <div class="control">
                 <button
@@ -55,22 +90,42 @@ export default {
   data() {
     return {
       isLoading: false,
+      image: null,
       roomData: {
         name: "",
-        description: ""
+        description: "",
+        imageURL: ""
       }
     };
   },
   methods: {
+    onFileChange(event) {
+      this.image = event.target.files[0];
+      this.$refs.file.value = null;
+    },
+
     async createRoom() {
       this.isLoading = true;
       try {
+        const newRoom = await this.$store.dispatch("rooms/getNewRoomId");
+        const roomID = newRoom.id;
+
+        if (this.image) {
+          this.imageURL = await this.$store.dispatch("rooms/uploadRoomImage", {
+            roomID,
+            file: this.image
+          });
+        }
+
         await this.$store.dispatch("rooms/createRoom", {
           name: this.roomData.name,
-          description: this.roomData.description
+          description: this.roomData.description,
+          image: this.imageURL,
+          roomID
         });
         this.$toast.success("Room created");
-        this.roomData.name = this.roomData.description = "";
+        this.roomData.name = this.roomData.description = this.roomData.imageURL =
+          "";
         setTimeout(() => this.$router.push({ name: "home" }), 1000);
       } catch (error) {
         console.error(error.message);
@@ -79,6 +134,24 @@ export default {
         this.isLoading = false;
       }
     }
+  },
+  computed: {
+    roomImage() {
+      return this.image
+        ? URL.createObjectURL(this.image)
+        : require("@/assets/img/room-image.jpg");
+    }
   }
 };
 </script>
+
+<style lang="scss" scoped>
+.room__image {
+  height: 20vmax;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid;
+  background-size: cover;
+  background-position: center;
+}
+</style>

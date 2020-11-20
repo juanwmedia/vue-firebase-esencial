@@ -1,4 +1,4 @@
-import { db } from "../firebase";
+import { db, storage } from "../firebase";
 
 const state = {
   rooms: [],
@@ -41,14 +41,40 @@ const mutations = {
 };
 
 const actions = {
-  async createRoom({ rootState }, { name, description }) {
-    await db.collection("rooms").add({
-      name,
-      description,
-      createdAt: Date.now(),
-      adminUid: rootState.user.user.uid,
-      adminName: rootState.user.user.displayName
-    });
+  getNewRoomId() {
+    return db.collection("rooms").doc();
+  },
+
+  async uploadRoomImage(context, { roomID, file }) {
+    const uploadPhoto = () => {
+      let fileName = `rooms/${roomID}/${roomID}-image.jpg`;
+      return storage.ref(fileName).put(file);
+    };
+
+    function getDownloadURL(ref) {
+      return ref.getDownloadURL();
+    }
+
+    try {
+      let upload = await uploadPhoto();
+      return await getDownloadURL(upload.ref);
+    } catch (error) {
+      throw Error(error.message);
+    }
+  },
+
+  async createRoom({ rootState }, { name, description, image, roomID }) {
+    await db
+      .collection("rooms")
+      .doc(roomID)
+      .set({
+        name,
+        description,
+        createdAt: Date.now(),
+        adminUid: rootState.user.user.uid,
+        adminName: rootState.user.user.displayName,
+        image
+      });
   },
 
   async getRooms({ commit }) {
