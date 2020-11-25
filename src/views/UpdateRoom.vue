@@ -29,6 +29,41 @@
               </div>
             </div>
 
+            <div class="field">
+              <label class="label">Image</label>
+              <div class="control">
+                <div
+                  class="room__image"
+                  :style="{
+                    'background-image': `url(${roomImage})`
+                  }"
+                >
+                  <a
+                    href="#"
+                    v-if="imageURL"
+                    @click.prevent="image = imageURL = null"
+                    class="is-pulled-right button is-small is-danger is-outlined"
+                    >X</a
+                  >
+                </div>
+                <div class="file">
+                  <label class="file-label">
+                    <input
+                      class="file-input"
+                      type="file"
+                      @change="onFileChange"
+                      ref="file"
+                    />
+                    <span class="file-cta">
+                      <span class="file-label">
+                        Choose a image
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <div class="field is-grouped is-grouped-right">
               <div class="control">
                 <button
@@ -64,6 +99,7 @@ export default {
   async created() {
     try {
       this.room = await this.$store.dispatch("rooms/getRoom", this.id);
+      this.imageURL = this.room.image;
     } catch (error) {
       console.error(error.message);
       this.$toast.error(error.message);
@@ -79,17 +115,33 @@ export default {
   data() {
     return {
       room: null,
-      isLoading: false
+      isLoading: false,
+      image: null,
+      imageURL: null
     };
   },
   methods: {
+    onFileChange(event) {
+      this.image = event.target.files[0];
+      this.imageURL = URL.createObjectURL(this.image);
+      this.$refs.file.value = null;
+    },
+
     async updateRoom() {
       this.isLoading = true;
       try {
+        if (this.image) {
+          this.imageURL = await this.$store.dispatch("rooms/uploadRoomImage", {
+            roomID: this.id,
+            file: this.image
+          });
+        }
+
         await this.$store.dispatch("rooms/updateRoom", {
           roomID: this.id,
           name: this.room.name,
-          description: this.room.description
+          description: this.room.description,
+          image: this.imageURL
         });
         this.$toast.success("Room data updated");
       } catch (error) {
@@ -119,7 +171,23 @@ export default {
   computed: {
     hasDataChanged() {
       return this.room.name && this.room.description;
+    },
+    roomImage() {
+      return this.imageURL
+        ? this.imageURL
+        : require("@/assets/img/room-image.jpg");
     }
   }
 };
 </script>
+
+<style lang="scss" scoped>
+.room__image {
+  height: 20vmax;
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid;
+  background-size: cover;
+  background-position: center;
+}
+</style>

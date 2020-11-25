@@ -130,12 +130,14 @@ const actions = {
     return room;
   },
 
-  async updateRoom(context, { roomID, name, description }) {
+  async updateRoom(context, { roomID, name, description, image }) {
     const roomData = {};
 
     if (name) roomData.name = name;
 
     if (description) roomData.description = description;
+
+    roomData.image = image;
 
     await db
       .collection("rooms")
