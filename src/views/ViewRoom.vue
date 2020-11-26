@@ -15,6 +15,13 @@
                     message.userId === $store.getters['user/getUserUid']
                 }"
               >
+                <!-- Message has photo -->
+                <div
+                  v-if="message.photo"
+                  class="message__photo"
+                  :style="{ 'background-image': `url(${message.photo})` }"
+                ></div>
+
                 <p>
                   {{ message.message }}
                   <span
@@ -43,6 +50,30 @@
             class="textarea form__textarea"
             placeholder="Write your message here..."
           ></textarea>
+        </div>
+        <div
+          v-if="photo"
+          @click="photo = null"
+          class="photo-preview"
+          :style="{ 'background-image': `url(${messagePhoto})` }"
+        ></div>
+        <div class="control">
+          <button
+            @click="$refs.file.click()"
+            :disabled="isLoading"
+            type="button"
+            class="button"
+            :class="{ 'is-loading': isLoading }"
+          >
+            🌄
+          </button>
+          <input
+            @change="onFileChange"
+            ref="file"
+            type="file"
+            class="inputfile"
+            style="display: none !important;"
+          />
         </div>
         <div class="control">
           <button
@@ -99,11 +130,17 @@ export default {
     return {
       userUid: null,
       isLoading: false,
+      photo: null,
+      fileURL: null,
       message: "",
       room: null
     };
   },
   methods: {
+    onFileChange(event) {
+      this.photo = event.target.files[0];
+      this.$refs.file.value = null;
+    },
     scrollDown() {
       const messages = this.$refs.messages;
       this.$nextTick(() => {
@@ -117,12 +154,24 @@ export default {
     async createMessage() {
       this.isLoading = true;
       try {
+        if (this.photo) {
+          this.fileURL = await this.$store.dispatch(
+            "messages/uploadMessageFile",
+            {
+              roomID: this.id,
+              file: this.photo
+            }
+          );
+        }
+
         await this.$store.dispatch("messages/createMessage", {
           roomID: this.id,
-          message: this.message
+          message: this.message,
+          photo: this.fileURL
         });
         this.scrollDown();
         this.message = "";
+        this.photo = this.fileURL = null;
       } catch (error) {
         console.error(error.message);
         this.$toast.error(error.message);
@@ -141,6 +190,9 @@ export default {
     ...mapState("messages", ["messages"]),
     roomMessages() {
       return this.messages.filter(message => message.roomId === this.id);
+    },
+    messagePhoto() {
+      return URL.createObjectURL(this.photo);
     }
   }
 };
@@ -166,6 +218,11 @@ export default {
     color: gray;
     font-size: 12px;
   }
+  &__photo {
+    height: 20vmax;
+    background-size: cover;
+    background-position: center;
+  }
 }
 
 .send {
@@ -175,6 +232,16 @@ export default {
   bottom: 0;
   left: 0;
   width: 100%;
+  .photo-preview {
+    width: 5rem;
+    height: 5rem;
+    border: 1px solid;
+    background-position: center;
+    background-size: cover;
+    margin-right: 1rem;
+    border-radius: 1rem;
+    cursor: pointer;
+  }
 }
 
 .form {

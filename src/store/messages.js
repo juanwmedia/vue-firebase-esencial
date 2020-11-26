@@ -1,4 +1,4 @@
-import { db } from "../firebase.js";
+import { db, storage } from "../firebase.js";
 
 const state = {
   messages: [],
@@ -41,7 +41,27 @@ const actions = {
     }
   },
 
-  async createMessage({ rootState }, { roomID, message }) {
+  async uploadMessageFile({ rootGetters }, { roomID, file }) {
+    const timestamp = Date.now();
+    const userUID = rootGetters["user/getUserUid"];
+    const uploadPhoto = () => {
+      let fileName = `rooms/${roomID}/messages/${userUID}-${timestamp}.jpg`;
+      return storage.ref(fileName).put(file);
+    };
+
+    function getDownloadURL(ref) {
+      return ref.getDownloadURL();
+    }
+
+    try {
+      let upload = await uploadPhoto();
+      return await getDownloadURL(upload.ref);
+    } catch (error) {
+      throw Error(error.message);
+    }
+  },
+
+  async createMessage({ rootState }, { roomID, message, photo }) {
     await db
       .collection("rooms")
       .doc(roomID)
@@ -51,6 +71,7 @@ const actions = {
         userName: rootState.user.user.displayName,
         roomId: roomID,
         message,
+        photo,
         createdAt: Date.now()
       });
   }
