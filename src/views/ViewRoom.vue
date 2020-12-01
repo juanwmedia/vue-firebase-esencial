@@ -19,6 +19,7 @@
                 <div
                   v-if="message.photo"
                   class="message__photo"
+                  :class="message.filter"
                   :style="{ 'background-image': `url(${message.photo})` }"
                 ></div>
 
@@ -133,13 +134,28 @@ export default {
       photo: null,
       fileURL: null,
       message: "",
-      room: null
+      room: null,
+      filter: null
     };
   },
   methods: {
-    onFileChange(event) {
+    async onFileChange(event) {
       this.photo = event.target.files[0];
       this.$refs.file.value = null;
+
+      try {
+        this.filter = await this.$store.dispatch("utils/requestConfirmation", {
+          props: {
+            message: "Select your filter",
+            file: this.messagePhoto,
+            filters: this.$store.state.messages.filters
+          },
+          component: "FilterModal"
+        });
+      } catch (error) {
+        console.error(error.message);
+        this.$toast.error(error.message);
+      }
     },
     scrollDown() {
       const messages = this.$refs.messages;
@@ -167,11 +183,12 @@ export default {
         await this.$store.dispatch("messages/createMessage", {
           roomID: this.id,
           message: this.message,
-          photo: this.fileURL
+          photo: this.fileURL,
+          filter: this.filter
         });
         this.scrollDown();
         this.message = "";
-        this.photo = this.fileURL = null;
+        this.photo = this.fileURL = this.filter = null;
       } catch (error) {
         console.error(error.message);
         this.$toast.error(error.message);

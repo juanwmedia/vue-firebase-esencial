@@ -2,7 +2,28 @@ import { db, storage } from "../firebase.js";
 
 const state = {
   messages: [],
-  messagesListener: () => {}
+  messagesListener: () => {},
+  filters: [
+    { name: "normal" },
+    { name: "clarendon" },
+    { name: "gingham" },
+    { name: "moon" },
+    { name: "lark" },
+    { name: "reyes" },
+    { name: "juno" },
+    { name: "slumber" },
+    { name: "aden" },
+    { name: "perpetua" },
+    { name: "mayfair" },
+    { name: "rise" },
+    { name: "hudson" },
+    { name: "valencia" },
+    { name: "xpro2" },
+    { name: "willow" },
+    { name: "lofi" },
+    { name: "inkwell" },
+    { name: "nashville" }
+  ]
 };
 
 const getters = {};
@@ -61,7 +82,7 @@ const actions = {
     }
   },
 
-  async createMessage({ rootState }, { roomID, message, photo }) {
+  async createMessage({ rootState }, { roomID, message, photo, filter }) {
     await db
       .collection("rooms")
       .doc(roomID)
@@ -72,6 +93,7 @@ const actions = {
         roomId: roomID,
         message,
         photo,
+        filter,
         createdAt: Date.now()
       });
   }
