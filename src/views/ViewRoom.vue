@@ -23,6 +23,11 @@
                   :style="{ 'background-image': `url(${message.photo})` }"
                 ></div>
 
+                <!-- Message has audio -->
+                <div v-if="message.audio" class="message__audio">
+                  <audio :src="message.audio" controls></audio>
+                </div>
+
                 <p>
                   {{ message.message }}
                   <span
@@ -58,6 +63,21 @@
           class="photo-preview"
           :style="{ 'background-image': `url(${messagePhoto})` }"
         ></div>
+        <div v-if="audio" class="audio-preview">
+          <a href="#" @click="audio = null" class="close">X</a>
+          <audio :src="messageAudio" controls></audio>
+        </div>
+        <div class="control">
+          <button
+            @click="recordAudio"
+            :disabled="isLoading"
+            type="button"
+            class="button"
+            :class="{ 'is-loading': isLoading }"
+          >
+            🎙
+          </button>
+        </div>
         <div class="control">
           <button
             @click="$refs.file.click()"
@@ -132,7 +152,9 @@ export default {
       userUid: null,
       isLoading: false,
       photo: null,
-      fileURL: null,
+      audio: null,
+      photoURL: null,
+      audioURL: null,
       message: "",
       room: null,
       filter: null
@@ -167,15 +189,40 @@ export default {
         });
       });
     },
+    async recordAudio() {
+      try {
+        this.audio = await this.$store.dispatch("utils/requestConfirmation", {
+          props: {
+            message: "Record your voice 🎤"
+          },
+          component: "RecordModal"
+        });
+      } catch (error) {
+        console.error(error.message);
+        this.$toast.error(error.message);
+      }
+    },
     async createMessage() {
       this.isLoading = true;
       try {
         if (this.photo) {
-          this.fileURL = await this.$store.dispatch(
+          this.photoURL = await this.$store.dispatch(
             "messages/uploadMessageFile",
             {
               roomID: this.id,
-              file: this.photo
+              file: this.photo,
+              type: "photo"
+            }
+          );
+        }
+
+        if (this.audio) {
+          this.audioURL = await this.$store.dispatch(
+            "messages/uploadMessageFile",
+            {
+              roomID: this.id,
+              file: this.audio,
+              type: "audio"
             }
           );
         }
@@ -183,12 +230,13 @@ export default {
         await this.$store.dispatch("messages/createMessage", {
           roomID: this.id,
           message: this.message,
-          photo: this.fileURL,
-          filter: this.filter
+          photo: this.photoURL,
+          filter: this.filter,
+          audio: this.audioURL
         });
         this.scrollDown();
         this.message = "";
-        this.photo = this.fileURL = this.filter = null;
+        this.photo = this.photoURL = this.audio = this.audioURL = this.filter = null;
       } catch (error) {
         console.error(error.message);
         this.$toast.error(error.message);
@@ -210,6 +258,9 @@ export default {
     },
     messagePhoto() {
       return URL.createObjectURL(this.photo);
+    },
+    messageAudio() {
+      return URL.createObjectURL(this.audio);
     }
   }
 };
@@ -258,6 +309,22 @@ export default {
     margin-right: 1rem;
     border-radius: 1rem;
     cursor: pointer;
+  }
+  .audio-preview {
+    margin-right: 1rem;
+    cursor: pointer;
+    position: relative;
+    .close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 1rem;
+      font-weight: bold;
+      background-color: black;
+      color: white;
+      text-decoration: none;
+      z-index: 1;
+    }
   }
 }
 

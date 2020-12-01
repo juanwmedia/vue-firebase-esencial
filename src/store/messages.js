@@ -62,11 +62,13 @@ const actions = {
     }
   },
 
-  async uploadMessageFile({ rootGetters }, { roomID, file }) {
+  async uploadMessageFile({ rootGetters }, { roomID, file, type }) {
     const timestamp = Date.now();
     const userUID = rootGetters["user/getUserUid"];
+
+    const ext = type === "photo" ? "jpg" : "wav";
     const uploadPhoto = () => {
-      let fileName = `rooms/${roomID}/messages/${userUID}-${timestamp}.jpg`;
+      let fileName = `rooms/${roomID}/messages/${userUID}-${timestamp}.${ext}`;
       return storage.ref(fileName).put(file);
     };
 
@@ -82,7 +84,10 @@ const actions = {
     }
   },
 
-  async createMessage({ rootState }, { roomID, message, photo, filter }) {
+  async createMessage(
+    { rootState },
+    { roomID, message, photo, filter, audio }
+  ) {
     await db
       .collection("rooms")
       .doc(roomID)
@@ -94,6 +99,7 @@ const actions = {
         message,
         photo,
         filter,
+        audio,
         createdAt: Date.now()
       });
   }
