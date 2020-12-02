@@ -15,6 +15,14 @@
                     message.userId === $store.getters['user/getUserUid']
                 }"
               >
+                <!-- Delete message -->
+                <a
+                  href="#"
+                  v-if="message.userId === $store.getters['user/getUserUid']"
+                  @click="deleteMessage(message.id)"
+                  class="message__delete is-pulled-right button is-small is-danger is-outlined"
+                  >X</a
+                >
                 <!-- Message has photo -->
                 <div
                   v-if="message.photo"
@@ -243,6 +251,36 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+    async deleteMessage(messageID) {
+      try {
+        await this.$store.dispatch("utils/requestConfirmation", {
+          props: { message: "¿Delete message" },
+          component: "ConfirmationModal"
+        });
+
+        const message = this.roomMessages.find(
+          message => message.id === messageID
+        );
+
+        if (message.photo) {
+          await this.$store.dispatch("messages/deleteFile", message.photo);
+        }
+
+        if (message.audio) {
+          await this.$store.dispatch("messages/deleteFile", message.audio);
+        }
+
+        await this.$store.dispatch("messages/deleteMessage", {
+          roomID: this.id,
+          messageID
+        });
+
+        this.$toast.success("Message deleted");
+      } catch (error) {
+        console.error(error.message);
+        this.$toast.error(error.message);
+      }
     }
   },
   filters: {
@@ -290,6 +328,11 @@ export default {
     height: 20vmax;
     background-size: cover;
     background-position: center;
+  }
+  &__delete {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1rem;
   }
 }
 
