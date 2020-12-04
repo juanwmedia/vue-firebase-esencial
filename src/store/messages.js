@@ -65,11 +65,20 @@ const actions = {
   async uploadMessageFile({ rootGetters }, { roomID, file, type }) {
     const timestamp = Date.now();
     const userUID = rootGetters["user/getUserUid"];
+    let ext;
+    const metadata = {};
 
-    const ext = type === "photo" ? "jpg" : "wav";
+    if (type === "photo") {
+      ext = "jpg";
+      metadata.contentType = "image/jpeg";
+    } else {
+      ext = "wav";
+      metadata.contentType = "audio/wav";
+    }
+
     const uploadPhoto = () => {
       let fileName = `rooms/${roomID}/messages/${userUID}-${timestamp}.${ext}`;
-      return storage.ref(fileName).put(file);
+      return storage.ref(fileName).put(file, metadata);
     };
 
     function getDownloadURL(ref) {
