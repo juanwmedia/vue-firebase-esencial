@@ -1,25 +1,18 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp();
-const regex = /perro/gi;
+const { Storage } = require("@google-cloud/storage");
 
-exports.replaceDogs = functions.firestore
-  .document("/rooms/{room}/messages/{message}")
-  .onCreate((snapshot, context) => {
-    const original = snapshot.data().message;
-    const replaced = original.replace(regex, "gato");
+exports.deleteStorageRoom = functions.firestore
+  .document("/rooms/{room}")
+  .onDelete((snapshot, context) => {
+    const folderId = snapshot.id;
 
-    if (original === replaced) {
-      return null; // Infinite loop protection
-    }
+    const storage = new Storage();
 
-    return snapshot.ref.update({ message: replaced }); // Always return something
+    const bucket = storage.bucket("vuetalk-f3e07.appspot.com");
+
+    return bucket.deleteFiles({
+      prefix: `rooms/${folderId}`
+    });
   });
-
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
-exports.helloWorld = functions.https.onRequest((request, response) => {
-  functions.logger.info("Hello logs!", { structuredData: true });
-  response.send("Hello from Firebase!");
-});
